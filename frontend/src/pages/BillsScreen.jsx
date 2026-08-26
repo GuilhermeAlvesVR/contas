@@ -1,10 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { getRoom, createBill, updateBill, deleteBill, toggleBill } from '../services/api';
 import { useNotifications } from '../hooks/useNotifications';
 import BillCard from '../components/BillCard';
 import BillModal from '../components/BillModal';
 import Summary from '../components/Summary';
+
+const monthNames = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
+
+function groupByMonth(bills) {
+  const groups = {};
+  bills.forEach(bill => {
+    const date = parseISO(bill.dueDate);
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    if (!groups[key]) groups[key] = { year: date.getFullYear(), month: date.getMonth(), bills: [] };
+    groups[key].bills.push(bill);
+  });
+  return Object.entries(groups)
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([key, value]) => ({
+      key,
+      label: `${monthNames[value.month]} ${value.year}`,
+      bills: value.bills.sort((a, b) => a.dueDate.localeCompare(b.dueDate)),
+    }));
+}
 
 export default function BillsScreen({ room, user, onExit }) {
   const [bills, setBills] = useState(room.bills || []);
@@ -91,6 +115,8 @@ export default function BillsScreen({ room, user, onExit }) {
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
+  const groups = groupByMonth(bills);
+
   return (
     <div className="bills-container">
       <header className="bills-header">
@@ -118,15 +144,32 @@ export default function BillsScreen({ room, user, onExit }) {
             <p className="empty-sub">Toque em "+ Nova conta" para começar</p>
           </div>
         ) : (
-          bills.map(bill => (
-            <BillCard
-              key={bill.id}
-              bill={bill}
-              onToggle={() => handleToggle(bill.id)}
-              onEdit={() => handleEdit(bill)}
-              onDelete={() => handleDelete(bill.id)}
-            />
-          ))
+          groups.map(group => {
+            const groupPaid = group.bills.filter(b => b.isPaid).reduce((s, b) => s + b.amount, 0);
+            const groupTotal = group.bills.reduce((s, b) => s + b.amount, 0);
+            return (
+              <div key={group.key} className="month-group">
+                <div className="month-header">
+                  <h2 className="month-title">{group.label}</h2>
+                  <div className="month-summary">
+                    <span className="month-total">R$ {groupTotal.toFixed(2).replace('.', ',')}</span>
+                    <span className="month-paid">{groupPaid.toFixed(2).replace('.', ',')} pago</span>
+                  </div>
+                </div>
+                <div className="month-bills">
+                  {group.bills.map(bill => (
+                    <BillCard
+                      key={bill.id}
+                      bill={bill}
+                      onToggle={() => handleToggle(bill.id)}
+                      onEdit={() => handleEdit(bill)}
+                      onDelete={() => handleDelete(bill.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })
         )}
       </div>
 
