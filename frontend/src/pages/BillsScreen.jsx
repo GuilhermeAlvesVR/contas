@@ -31,7 +31,8 @@ function groupByMonth(bills) {
 }
 
 export default function BillsScreen({ room, user, onExit }) {
-  const [bills, setBills] = useState(room.bills || []);
+  const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -40,38 +41,40 @@ export default function BillsScreen({ room, user, onExit }) {
 
   useNotifications(bills);
 
-  useEffect(() => {
-    getRoom(room.shareCode).then(freshRoom => {
+  const fetchBills = () => {
+    return getRoom(room.shareCode).then(freshRoom => {
       setBills(freshRoom.bills || []);
-    }).catch(() => {});
+      setLoading(false);
+      return freshRoom;
+    }).catch(() => { setLoading(false); });
+  };
+
+  useEffect(() => {
+    fetchBills();
   }, []);
 
   const handleCreate = async (data) => {
-    const bill = await createBill(room.id, { ...data, createdBy: user });
-    setBills([...bills, bill]);
+    await createBill(room.id, { ...data, createdBy: user });
+    await fetchBills();
     setShowModal(false);
   };
 
   const handleUpdate = async (data) => {
-    const updated = await updateBill(editingBill.id, data);
-    setBills(bills.map(b => b.id === updated.id ? updated : b));
+    await updateBill(editingBill.id, data);
     setEditingBill(null);
     setShowModal(false);
+    await fetchBills();
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Deletar esta conta?')) return;
     await deleteBill(id);
-    setBills(bills.filter(b => b.id !== id));
+    await fetchBills();
   };
 
   const handleToggle = async (id) => {
-    const result = await toggleBill(id);
-    let updated = bills.map(b => b.id === id ? result : b);
-    if (result.newBill) {
-      updated = [...updated, result.newBill];
-    }
-    setBills(updated);
+    await toggleBill(id);
+    await fetchBills();
   };
 
   const handleEdit = (bill) => {
@@ -142,7 +145,11 @@ export default function BillsScreen({ room, user, onExit }) {
       </div>
 
       <div className="bills-list">
-        {bills.length === 0 ? (
+        {loading ? (
+          <div className="empty-state">
+            <p>Carregando...</p>
+          </div>
+        ) : bills.length === 0 ? (
           <div className="empty-state">
             <p>Nenhuma conta ainda</p>
             <p className="empty-sub">Toque em "+ Nova conta" para começar</p>
