@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createRoom, getRoom } from '../services/api';
 
-export default function AccessScreen({ onEnter }) {
-  const [mode, setMode] = useState('choose');
-  const [shareCode, setShareCode] = useState('');
+export default function AccessScreen({ onEnter, initialShareCode }) {
+  const [mode, setMode] = useState(initialShareCode ? 'join' : 'choose');
+  const [shareCode, setShareCode] = useState(initialShareCode || '');
   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -49,7 +49,29 @@ export default function AccessScreen({ onEnter }) {
             value={userName}
             onChange={(e) => { setUserName(e.target.value); setError(''); }}
             className="input-field"
+            autoFocus
           />
+
+          {mode === 'join' && (
+            <div className="access-buttons">
+              <input
+                type="text"
+                placeholder="Código da sala"
+                value={shareCode}
+                onChange={(e) => { setShareCode(e.target.value); setError(''); }}
+                className="input-field"
+                disabled={!!initialShareCode}
+              />
+              <button onClick={handleJoin} className="btn btn-primary" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
+              </button>
+              {!initialShareCode && (
+                <button onClick={() => setMode('choose')} className="btn btn-ghost">
+                  Voltar
+                </button>
+              )}
+            </div>
+          )}
 
           {mode === 'choose' && (
             <div className="access-buttons">
@@ -66,24 +88,6 @@ export default function AccessScreen({ onEnter }) {
             <div className="access-buttons">
               <button onClick={handleCreate} className="btn btn-primary" disabled={loading}>
                 {loading ? 'Criando...' : 'Criar sala'}
-              </button>
-              <button onClick={() => setMode('choose')} className="btn btn-ghost">
-                Voltar
-              </button>
-            </div>
-          )}
-
-          {mode === 'join' && (
-            <div className="access-buttons">
-              <input
-                type="text"
-                placeholder="Código da sala"
-                value={shareCode}
-                onChange={(e) => { setShareCode(e.target.value); setError(''); }}
-                className="input-field"
-              />
-              <button onClick={handleJoin} className="btn btn-primary" disabled={loading}>
-                {loading ? 'Entrando...' : 'Entrar'}
               </button>
               <button onClick={() => setMode('choose')} className="btn btn-ghost">
                 Voltar

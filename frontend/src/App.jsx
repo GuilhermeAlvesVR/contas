@@ -8,17 +8,6 @@ function AppRoutes({ room, user, onEnter, onExit }) {
   const [searchParams] = useSearchParams();
   const roomParam = searchParams.get('room');
 
-  useEffect(() => {
-    if (roomParam && !room) {
-      getRoom(roomParam).then(roomData => {
-        const savedUser = localStorage.getItem('userName');
-        if (savedUser) {
-          onEnter(roomData, savedUser);
-        }
-      }).catch(() => {});
-    }
-  }, [roomParam, room, onEnter]);
-
   return (
     <Routes>
       <Route
@@ -27,7 +16,7 @@ function AppRoutes({ room, user, onEnter, onExit }) {
           room ? (
             <Navigate to={`/room/${room.shareCode}`} />
           ) : (
-            <AccessScreen onEnter={onEnter} />
+            <AccessScreen onEnter={onEnter} initialShareCode={roomParam} />
           )
         }
       />
