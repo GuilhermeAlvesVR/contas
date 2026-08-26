@@ -136,7 +136,7 @@ export default function BillsScreen({ room, user, onExit }) {
         </button>
       </header>
 
-      <Summary bills={bills} />
+      <Summary bills={bills} user={user} />
 
       <div className="bills-actions">
         <button onClick={() => setShowModal(true)} className="btn btn-primary btn-full">
@@ -158,12 +158,18 @@ export default function BillsScreen({ room, user, onExit }) {
           groups.map(group => {
             const groupPaid = group.bills.filter(b => b.isPaid).reduce((s, b) => s + b.amount, 0);
             const groupTotal = group.bills.reduce((s, b) => s + b.amount, 0);
+            const groupMyPending = group.bills.filter(b => !b.isPaid).reduce((s, b) => {
+              if (b.splitType === 'custom') {
+                return s + (b.createdBy === user ? (b.splitValue1 || b.amount / 2) : (b.splitValue2 || b.amount / 2));
+              }
+              return s + b.amount / 2;
+            }, 0);
             return (
               <div key={group.key} className="month-group">
                 <div className="month-header">
                   <h2 className="month-title">{group.label}</h2>
                   <div className="month-summary">
-                    <span className="month-total">R$ {groupTotal.toFixed(2).replace('.', ',')}</span>
+                    <span className="month-my">R$ {groupMyPending.toFixed(2).replace('.', ',')} seu</span>
                     <span className="month-paid">{groupPaid.toFixed(2).replace('.', ',')} pago</span>
                   </div>
                 </div>
@@ -172,6 +178,7 @@ export default function BillsScreen({ room, user, onExit }) {
                     <BillCard
                       key={bill.id}
                       bill={bill}
+                      user={user}
                       onToggle={() => handleToggle(bill.id)}
                       onEdit={() => handleEdit(bill)}
                       onDelete={() => handleDelete(bill.id)}

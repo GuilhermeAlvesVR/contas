@@ -451,6 +451,15 @@ select.input-field {
   border-radius: 20px;
 }
 
+.month-my {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffab40;
+  background: rgba(255,145,0,0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
 .month-bills {
   display: flex;
   flex-direction: column;
@@ -518,7 +527,7 @@ select.input-field {
   opacity: 0.45;
 }
 
-.bill-card.paid .bill-amount {
+.bill-card.paid .bill-my-amount {
   text-decoration: line-through;
   color: var(--color-text-muted);
 }
@@ -607,12 +616,24 @@ select.input-field {
   margin-left: 12px;
 }
 
-.bill-amount {
-  font-weight: 800;
-  font-size: 15px;
-  color: var(--color-text);
+.bill-amounts {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
   white-space: nowrap;
+}
+
+.bill-my-amount {
+  font-weight: 800;
+  font-size: 16px;
+  color: #69f0ae;
   letter-spacing: -0.3px;
+}
+
+.bill-total-amount {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
 }
 
 .bill-due {

@@ -20,7 +20,7 @@ const repeatLabels = {
   yearly: 'Anual',
 };
 
-export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
+export default function BillCard({ bill, user, onToggle, onEdit, onDelete }) {
   const dueDate = parseISO(bill.dueDate);
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -35,6 +35,16 @@ export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
     return '';
   };
 
+  const getMyAmount = () => {
+    if (bill.splitType === 'custom') {
+      if (bill.createdBy === user) {
+        return bill.splitValue1 || bill.amount / 2;
+      }
+      return bill.splitValue2 || bill.amount / 2;
+    }
+    return bill.amount / 2;
+  };
+
   const dueText = () => {
     if (bill.isPaid) return <span className="paid-badge">Pago</span>;
     if (daysUntilDue < 0) return <span>Atrasado {Math.abs(daysUntilDue)}d</span>;
@@ -42,6 +52,9 @@ export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
     if (daysUntilDue === 1) return <span>Vence amanhã</span>;
     return <span>Vence em {daysUntilDue}d</span>;
   };
+
+  const myAmount = getMyAmount();
+  const isSplit = bill.splitType === 'custom' || true;
 
   return (
     <div className={`bill-card ${getDueStatusClass()}`}>
@@ -67,8 +80,9 @@ export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
         </div>
       </div>
       <div className="bill-right">
-        <div className="bill-amount">
-          R$ {bill.amount.toFixed(2).replace('.', ',')}
+        <div className="bill-amounts">
+          <span className="bill-my-amount">R$ {myAmount.toFixed(2).replace('.', ',')}</span>
+          <span className="bill-total-amount">R$ {bill.amount.toFixed(2).replace('.', ',')}</span>
         </div>
         <div className={`bill-due ${getDueStatusClass()}`}>
           {dueText()}
