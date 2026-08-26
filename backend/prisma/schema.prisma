@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id          String   @id @default(uuid())
+  shareCode   String   @unique
+  createdAt   DateTime @default(now())
+
+  bills Bill[]
+}
+
+model Bill {
+  id          String   @id @default(uuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  name        String
+  amount      Float
+  dueDate     String
+  isPaid      Boolean  @default(false)
+  splitType   String   @default("equal")
+  splitValue1 Float?
+  splitValue2 Float?
+  category    String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
