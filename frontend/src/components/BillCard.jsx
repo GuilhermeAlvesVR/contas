@@ -14,6 +14,13 @@ const categoryIcons = {
   'Outros': '📋',
 };
 
+const repeatLabels = {
+  weekly: 'Semanal',
+  monthly: 'Mensal',
+  quarterly: 'Trimestral',
+  yearly: 'Anual',
+};
+
 export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
   const dueDate = parseISO(bill.dueDate);
   const daysUntilDue = differenceInDays(dueDate, new Date());
@@ -43,6 +50,9 @@ export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
           </div>
           <div className="bill-meta">
             <span className="bill-category">{bill.category || 'Sem categoria'}</span>
+            {bill.repeatType && bill.repeatType !== 'none' && (
+              <span className="bill-repeat">🔄 {repeatLabels[bill.repeatType]}</span>
+            )}
             {bill.createdBy && <span className="bill-author">por {bill.createdBy}</span>}
           </div>
         </div>

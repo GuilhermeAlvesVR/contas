@@ -66,8 +66,12 @@ export default function BillsScreen({ room, user, onExit }) {
   };
 
   const handleToggle = async (id) => {
-    const updated = await toggleBill(id);
-    setBills(bills.map(b => b.id === updated.id ? updated : b));
+    const result = await toggleBill(id);
+    let updated = bills.map(b => b.id === id ? result : b);
+    if (result.newBill) {
+      updated = [...updated, result.newBill];
+    }
+    setBills(updated);
   };
 
   const handleEdit = (bill) => {

@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 
 const categories = ['Aluguel', 'Luz', 'Água', 'Internet', 'Telefone', 'Mercado', 'Transporte', 'Lazer', 'Saúde', 'Outros'];
+const repeatOptions = [
+  { value: 'none', label: 'Não repetir' },
+  { value: 'weekly', label: 'Semanal' },
+  { value: 'monthly', label: 'Mensal' },
+  { value: 'quarterly', label: 'Trimestral' },
+  { value: 'yearly', label: 'Anual' },
+];
 
 export default function BillModal({ bill, onSave, onClose }) {
   const [form, setForm] = useState({
@@ -11,6 +18,7 @@ export default function BillModal({ bill, onSave, onClose }) {
     splitType: 'equal',
     splitValue1: '',
     splitValue2: '',
+    repeatType: 'none',
   });
 
   useEffect(() => {
@@ -23,6 +31,7 @@ export default function BillModal({ bill, onSave, onClose }) {
         splitType: bill.splitType || 'equal',
         splitValue1: bill.splitValue1?.toString() || '',
         splitValue2: bill.splitValue2?.toString() || '',
+        repeatType: bill.repeatType || 'none',
       });
     }
   }, [bill]);
@@ -88,6 +97,19 @@ export default function BillModal({ bill, onSave, onClose }) {
             >
               {categories.map(c => (
                 <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Repetir</label>
+            <select
+              value={form.repeatType}
+              onChange={e => setForm({ ...form, repeatType: e.target.value })}
+              className="input-field"
+            >
+              {repeatOptions.map(r => (
+                <option key={r.value} value={r.value}>{r.label}</option>
               ))}
             </select>
           </div>

@@ -18,6 +18,27 @@ function generateShareCode() {
   return randomBytes(4).toString('hex');
 }
 
+function getNextDueDate(dueDate, repeatType) {
+  const date = new Date(dueDate);
+  switch (repeatType) {
+    case 'weekly':
+      date.setDate(date.getDate() + 7);
+      break;
+    case 'monthly':
+      date.setMonth(date.getMonth() + 1);
+      break;
+    case 'quarterly':
+      date.setMonth(date.getMonth() + 3);
+      break;
+    case 'yearly':
+      date.setFullYear(date.getFullYear() + 1);
+      break;
+    default:
+      return null;
+  }
+  return date.toISOString().split('T')[0];
+}
+
 // Create a new room
 app.post('/api/rooms', async (req, res) => {
   try {
@@ -49,7 +70,7 @@ app.get('/api/rooms/:shareCode', async (req, res) => {
 // Create a bill
 app.post('/api/rooms/:roomId/bills', async (req, res) => {
   try {
-    const { name, amount, dueDate, splitType, splitValue1, splitValue2, category, createdBy } = req.body;
+    const { name, amount, dueDate, splitType, splitValue1, splitValue2, category, createdBy, repeatType } = req.body;
     const bill = await prisma.bill.create({
       data: {
         roomId: req.params.roomId,
@@ -61,6 +82,7 @@ app.post('/api/rooms/:roomId/bills', async (req, res) => {
         splitValue2: splitValue2 ? parseFloat(splitValue2) : null,
         category: category || null,
         createdBy: createdBy || null,
+        repeatType: repeatType || 'none',
       },
     });
     res.json(bill);
@@ -72,7 +94,7 @@ app.post('/api/rooms/:roomId/bills', async (req, res) => {
 // Update a bill
 app.put('/api/bills/:id', async (req, res) => {
   try {
-    const { name, amount, dueDate, isPaid, splitType, splitValue1, splitValue2, category } = req.body;
+    const { name, amount, dueDate, isPaid, splitType, splitValue1, splitValue2, category, repeatType } = req.body;
     const bill = await prisma.bill.update({
       where: { id: req.params.id },
       data: {
@@ -84,6 +106,7 @@ app.put('/api/bills/:id', async (req, res) => {
         splitValue1: splitValue1 ? parseFloat(splitValue1) : undefined,
         splitValue2: splitValue2 ? parseFloat(splitValue2) : undefined,
         category,
+        repeatType,
       },
     });
     res.json(bill);
@@ -110,7 +133,29 @@ app.patch('/api/bills/:id/toggle', async (req, res) => {
       where: { id: req.params.id },
       data: { isPaid: !bill.isPaid },
     });
-    res.json(updated);
+
+    let newBill = null;
+    if (!bill.isPaid && bill.repeatType && bill.repeatType !== 'none') {
+      const nextDate = getNextDueDate(bill.dueDate, bill.repeatType);
+      if (nextDate) {
+        newBill = await prisma.bill.create({
+          data: {
+            roomId: bill.roomId,
+            name: bill.name,
+            amount: bill.amount,
+            dueDate: nextDate,
+            splitType: bill.splitType,
+            splitValue1: bill.splitValue1,
+            splitValue2: bill.splitValue2,
+            category: bill.category,
+            createdBy: bill.createdBy,
+            repeatType: bill.repeatType,
+          },
+        });
+      }
+    }
+
+    res.json({ ...updated, newBill });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao atualizar status' });
   }

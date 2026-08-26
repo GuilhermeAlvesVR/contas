@@ -28,6 +28,7 @@ model Bill {
   splitValue2 Float?
   category    String?
   createdBy   String?
+  repeatType  String?  @default("none")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
