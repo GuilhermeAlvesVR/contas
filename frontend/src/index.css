@@ -443,6 +443,30 @@ select.input-field {
   margin-bottom: 12px;
 }
 
+.share-code-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.share-code-text {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.share-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
 .share-buttons {
   display: flex;
   gap: 8px;

@@ -11,6 +11,7 @@ export default function BillsScreen({ room, user, onExit }) {
   const [showModal, setShowModal] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
   const navigate = useNavigate();
 
   useNotifications(bills);
@@ -82,6 +83,12 @@ export default function BillsScreen({ room, user, onExit }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleCopyCode = async () => {
+    await navigator.clipboard.writeText(room.shareCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
   return (
     <div className="bills-container">
       <header className="bills-header">
@@ -123,6 +130,13 @@ export default function BillsScreen({ room, user, onExit }) {
 
       <div className="share-section">
         <p className="share-label">Compartilhar com sua parceira</p>
+        <div className="share-code-box">
+          <span className="share-code-text">{room.shareCode}</span>
+          <button onClick={handleCopyCode} className="btn btn-ghost btn-sm">
+            {copiedCode ? '✅ Copiado!' : '📋 Copiar'}
+          </button>
+        </div>
+        <p className="share-hint">Ela entra em <strong>Entrar com código</strong> e digita esse código</p>
         <div className="share-buttons">
           <button onClick={handleShare} className="btn btn-primary btn-share">
             📤 Enviar link
