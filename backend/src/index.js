@@ -27,7 +27,8 @@ app.post('/api/rooms', async (req, res) => {
     });
     res.json(room);
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao criar sala' });
+    console.error('Erro ao criar sala:', error.message);
+    res.status(500).json({ error: 'Erro ao criar sala', detail: error.message });
   }
 });
 
