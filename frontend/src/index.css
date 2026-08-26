@@ -528,7 +528,6 @@ select.input-field {
 }
 
 .bill-card.paid .bill-my-amount {
-  text-decoration: line-through;
   color: var(--color-text-muted);
 }
 
@@ -633,7 +632,6 @@ select.input-field {
 .bill-total-amount {
   font-size: 11px;
   color: var(--color-text-muted);
-  text-decoration: line-through;
 }
 
 .bill-due {
