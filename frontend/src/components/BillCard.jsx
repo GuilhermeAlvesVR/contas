@@ -1,5 +1,4 @@
-import { format, differenceInDays, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { differenceInDays, parseISO } from 'date-fns';
 
 const categoryIcons = {
   'Aluguel': '🏠',
@@ -23,7 +22,9 @@ const repeatLabels = {
 
 export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
   const dueDate = parseISO(bill.dueDate);
-  const daysUntilDue = differenceInDays(dueDate, new Date());
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const daysUntilDue = differenceInDays(dueDate, now);
   const isOverdue = daysUntilDue < 0 && !bill.isPaid;
   const isDueSoon = daysUntilDue <= 3 && daysUntilDue >= 0 && !bill.isPaid;
 
@@ -32,6 +33,14 @@ export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
     if (isOverdue) return 'overdue';
     if (isDueSoon) return 'due-soon';
     return '';
+  };
+
+  const dueText = () => {
+    if (bill.isPaid) return <span className="paid-badge">Pago</span>;
+    if (daysUntilDue < 0) return <span>Atrasado {Math.abs(daysUntilDue)}d</span>;
+    if (daysUntilDue === 0) return <span>Vence hoje</span>;
+    if (daysUntilDue === 1) return <span>Vence amanhã</span>;
+    return <span>Vence em {daysUntilDue}d</span>;
   };
 
   return (
@@ -49,11 +58,11 @@ export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
             {bill.name}
           </div>
           <div className="bill-meta">
-            <span className="bill-category">{bill.category || 'Sem categoria'}</span>
+            {bill.category && <span>{bill.category}</span>}
             {bill.repeatType && bill.repeatType !== 'none' && (
               <span className="bill-repeat">🔄 {repeatLabels[bill.repeatType]}</span>
             )}
-            {bill.createdBy && <span className="bill-author">por {bill.createdBy}</span>}
+            {bill.createdBy && <span>{bill.createdBy}</span>}
           </div>
         </div>
       </div>
@@ -62,15 +71,7 @@ export default function BillCard({ bill, onToggle, onEdit, onDelete }) {
           R$ {bill.amount.toFixed(2).replace('.', ',')}
         </div>
         <div className={`bill-due ${getDueStatusClass()}`}>
-          {bill.isPaid ? (
-            <span className="paid-badge">Pago ✓</span>
-          ) : (
-            <span>
-              {isOverdue ? `Atrasado ${Math.abs(daysUntilDue)}d` :
-               daysUntilDue === 0 ? 'Vence hoje' :
-               `Vence em ${daysUntilDue}d`}
-            </span>
-          )}
+          {dueText()}
         </div>
         <div className="bill-actions">
           <button onClick={onEdit} className="bill-action-btn">✏️</button>
