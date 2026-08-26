@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createBill, updateBill, deleteBill, toggleBill } from '../services/api';
+import { getRoom, createBill, updateBill, deleteBill, toggleBill } from '../services/api';
 import { useNotifications } from '../hooks/useNotifications';
 import BillCard from '../components/BillCard';
 import BillModal from '../components/BillModal';
@@ -17,8 +17,10 @@ export default function BillsScreen({ room, user, onExit }) {
   useNotifications(bills);
 
   useEffect(() => {
-    setBills(room.bills || []);
-  }, [room]);
+    getRoom(room.shareCode).then(freshRoom => {
+      setBills(freshRoom.bills || []);
+    }).catch(() => {});
+  }, []);
 
   const handleCreate = async (data) => {
     const bill = await createBill(room.id, { ...data, createdBy: user });
