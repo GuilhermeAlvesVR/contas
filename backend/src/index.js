@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({ ok: true });
+  res.json({ ok: true, timestamp: Date.now() });
 });
 
 function generateShareCode() {
