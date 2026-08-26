@@ -36,7 +36,6 @@ export default function BillsScreen({ room, user, onExit }) {
   const [showModal, setShowModal] = useState(false);
   const [editingBill, setEditingBill] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
   const navigate = useNavigate();
 
   useNotifications(bills);
@@ -110,18 +109,6 @@ export default function BillsScreen({ room, user, onExit }) {
     }
   };
 
-  const handleCopyLink = async () => {
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleCopyCode = async () => {
-    await navigator.clipboard.writeText(room.shareCode);
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2000);
-  };
-
   const groups = groupByMonth(bills);
 
   return (
@@ -191,24 +178,9 @@ export default function BillsScreen({ room, user, onExit }) {
         )}
       </div>
 
-      <div className="share-section">
-        <p className="share-label">Compartilhar com sua parceira</p>
-        <div className="share-code-box">
-          <span className="share-code-text">{room.shareCode}</span>
-          <button onClick={handleCopyCode} className="btn btn-ghost btn-sm">
-            {copiedCode ? '✅ Copiado!' : '📋 Copiar'}
-          </button>
-        </div>
-        <p className="share-hint">Ela entra em <strong>Entrar com código</strong> e digita esse código</p>
-        <div className="share-buttons">
-          <button onClick={handleShare} className="btn btn-primary btn-share">
-            📤 Enviar link
-          </button>
-          <button onClick={handleCopyLink} className="btn btn-secondary btn-share">
-            {copied ? '✅ Copiado!' : '📋 Copiar link'}
-          </button>
-        </div>
-      </div>
+      <button onClick={handleShare} className="btn btn-secondary btn-full btn-share">
+        {copied ? '✅ Copiado!' : `📤 Compartilhar (${room.shareCode})`}
+      </button>
 
       {showModal && (
         <BillModal
